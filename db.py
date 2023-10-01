@@ -1,13 +1,13 @@
 from datetime import datetime
 from typing import Optional
-
-from sqlalchemy import Column, create_engine, String, ForeignKey, JSON, DateTime, Table
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy import Column, String, ForeignKey, JSON, DateTime, Table
 from sqlalchemy.orm import relationship, mapped_column, Mapped, declarative_base
 from settings import DATABASE_URL
-
+from repositories.in_db_classes import UserInDB, GameInDB
 
 Base = declarative_base()
-engine = create_engine(
+engine = create_async_engine(
     DATABASE_URL,
 )
 
@@ -31,6 +31,12 @@ class User(Base):
     def __repr__(self):
         return self.name
 
+    def to_domain(self) -> UserInDB:
+        return UserInDB(
+            id=self.id,
+            name=self.name,
+        )
+
 
 class Game(Base):
     __tablename__ = "games"
@@ -43,6 +49,17 @@ class Game(Base):
     winner: Mapped[Optional["User"]] = relationship(back_populates="games_won")
     users: Mapped[list["User"]] = relationship(secondary=users_to_games, back_populates="games")
     history: Mapped[Optional[list[dict | list] | dict]] = mapped_column(type_=JSON)
+
+    def to_domain(self) -> GameInDB:
+        return GameInDB(
+            id=self.id,
+            config=self.config,
+            game_started_time=self.game_started_time,
+            game_ended_time=self.game_ended_time,
+            winner=self.winner,
+            users=[user.to_domain() for user in self.users],
+            history=self.history,
+        )
 
 
 class Wallet(Base):

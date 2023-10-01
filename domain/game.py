@@ -12,7 +12,7 @@ class Game(BaseModel):
     game_ended_time: datetime
     winner: Optional[User]
     users: list[User]
-    history: list[dict]
+    history: list[dict | list] | dict
 
     class Config:
         extra = 'allow'
