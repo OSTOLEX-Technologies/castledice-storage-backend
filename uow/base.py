@@ -1,27 +1,30 @@
 import abc
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import sessionmaker
+
 from db import engine
 
 DEFAULT_SESSION_FACTORY = sessionmaker(
-    bind=engine
+    bind=engine,
+    expire_on_commit=False,
+    class_=AsyncSession,
 )
 
 
 class AbstractUnitOfWork(abc.ABC):
-    def __enter__(self) -> 'AbstractUnitOfWork':
+    async def __aenter__(self) -> 'AbstractUnitOfWork':
         return self
 
-    def __exit__(self, *args):
-        self.rollback()
+    async def __aexit__(self, *args):
+        await self.rollback()
 
     @abc.abstractmethod
-    def commit(self):
+    async def commit(self):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def rollback(self):
+    async def rollback(self):
         raise NotImplementedError
 
 
@@ -33,17 +36,17 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
     def init_repository(self):
         raise NotImplementedError
 
-    def __enter__(self):
-        self.session: Session = self.session_factory()
+    async def __aenter__(self):
+        self.session: AsyncSession = self.session_factory()  # type: ignore # There will be AsyncSession object
         self.init_repository()
-        return super().__enter__()
+        return await super().__aenter__()
 
-    def __exit__(self, *args):
-        super().__exit__(*args)
-        self.session.close()
+    async def __aexit__(self, *args):
+        await super().__aexit__(*args)
+        await self.session.close()
 
-    def commit(self):
-        self.session.commit()
+    async def commit(self):
+        await self.session.commit()
 
-    def rollback(self):
-        self.session.rollback()
+    async def rollback(self):
+        await self.session.rollback()
