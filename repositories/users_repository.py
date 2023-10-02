@@ -28,4 +28,3 @@ class SQLAlchemyUsersRepository(UsersRepository):
             name=user.name,
         )
         self.session.add(orm_user)
-        await self.session.commit()

@@ -55,4 +55,3 @@ class SQLAlchemyGameRepository(GameRepository):
             history=game.history,
         )
         self.session.add(game_in_db)
-        await self.session.commit()
