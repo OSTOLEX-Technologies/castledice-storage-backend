@@ -3,8 +3,9 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy import Column, String, ForeignKey, JSON, DateTime, Table
 from sqlalchemy.orm import relationship, mapped_column, Mapped, declarative_base
+
 from settings import DATABASE_URL
-from repositories.in_db_classes import UserInDB, GameInDB
+from repositories.in_db_classes import UserInDB, GameInDB, WalletInDB
 
 Base = declarative_base()
 engine = create_async_engine(
@@ -35,6 +36,9 @@ class User(Base):
         return UserInDB(
             id=self.id,
             name=self.name,
+            wallet=WalletInDB(id=self.wallet.id, address=self.wallet.address) if self.wallet else None,
+            games=[game.to_domain() for game in self.games],
+            games_won=[game.to_domain() for game in self.games_won],
         )
 
 
@@ -69,6 +73,12 @@ class Wallet(Base):
     address: Mapped[str] = mapped_column(String(64))
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     user: Mapped["User"] = relationship(back_populates="wallet")
+
+    def to_domain(self) -> WalletInDB:
+        return WalletInDB(
+            id=self.id,
+            address=self.address,
+        )
 
 
 if __name__ == "__main__":

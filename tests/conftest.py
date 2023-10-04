@@ -1,5 +1,3 @@
-import os
-
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -8,7 +6,7 @@ from db import Base
 
 @pytest.fixture
 def in_memory_db():
-    engine = create_engine('sqlite:///:memory:')
+    engine = create_engine('sqlite+aiosqlite:///:memory:')
     Base.create_all(engine)
     return engine
 
