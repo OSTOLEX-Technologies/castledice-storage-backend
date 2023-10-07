@@ -13,6 +13,7 @@ class FakeGamesRepository(GameRepository):
 
     async def get_game(self, game_id: int) -> Game:
         return self.games[game_id]
+        
     async def create_game(self, game: GameInDB) -> Game:
         self.games[max(self.games or [0]) + 1] = game
         return game
