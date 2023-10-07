@@ -5,4 +5,4 @@ class DoesNotExistException(Exception):
         self.id = id
 
     def __str__(self):
-        return f"The {self.class_name} with the given id {self.id}does not exist."
+        return f"The {self.class_name} with the given id {self.id} does not exist."
