@@ -1,6 +1,7 @@
+import asyncio
 from datetime import datetime
 from typing import Optional
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy import Column, String, ForeignKey, JSON, DateTime, Table
 from sqlalchemy.orm import relationship, mapped_column, Mapped, declarative_base
 
@@ -81,5 +82,11 @@ class Wallet(Base):
         )
 
 
+async def init_models():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+
+
 if __name__ == "__main__":
-    Base.metadata.create_all(engine)
+    asyncio.run(init_models())
