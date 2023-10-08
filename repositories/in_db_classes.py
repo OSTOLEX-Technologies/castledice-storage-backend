@@ -10,8 +10,8 @@ class WalletInDB(Wallet):
 class UserInDB(User):
     id: int | None
     wallet: WalletInDB | None = None
-    games: list['GameInDB']
-    games_won: list['GameInDB']
+    games: list[int]
+    games_won: list[int]
 
 
 class GameInDB(Game):

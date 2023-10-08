@@ -38,8 +38,17 @@ class User(Base):
             id=self.id,
             name=self.name,
             wallet=WalletInDB(id=self.wallet.id, address=self.wallet.address) if self.wallet else None,
-            games=[game.to_domain() for game in self.games],
-            games_won=[game.to_domain() for game in self.games_won],
+            games=[game.to_domain_without_users() for game in self.games],
+            games_won=[game.to_domain_without_users() for game in self.games_won],
+        )
+
+    def to_domain_without_games(self) -> UserInDB:
+        return UserInDB(
+            id=self.id,
+            name=self.name,
+            wallet=WalletInDB(id=self.wallet.id, address=self.wallet.address) if self.wallet else None,
+            games=[],
+            games_won=[],
         )
 
 
@@ -62,7 +71,18 @@ class Game(Base):
             game_started_time=self.game_started_time,
             game_ended_time=self.game_ended_time,
             winner=self.winner,
-            users=[user.to_domain() for user in self.users],
+            users=[user.to_domain_without_games() for user in self.users],
+            history=self.history,
+        )
+
+    def to_domain_without_users(self) -> GameInDB:
+        return GameInDB(
+            id=self.id,
+            config=self.config,
+            game_started_time=self.game_started_time,
+            game_ended_time=self.game_ended_time,
+            winner=self.winner,
+            users=[],
             history=self.history,
         )
 

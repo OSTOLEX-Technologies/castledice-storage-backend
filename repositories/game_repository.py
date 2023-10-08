@@ -44,7 +44,7 @@ class SQLAlchemyGameRepository(GameRepository):
     async def get_game(self, game_id: int) -> GameInDB:
         game = (await self.session.scalars(
             select(SQLAlchemyGame).filter(SQLAlchemyGame.id == game_id).options(
-                selectinload(SQLAlchemyGame.users),
+                selectinload(SQLAlchemyGame.users).subqueryload(SQLAlchemyUser.wallet),
                 selectinload(SQLAlchemyGame.winner),
             )
         )).first()
