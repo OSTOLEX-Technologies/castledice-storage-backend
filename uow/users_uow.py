@@ -1,10 +1,10 @@
 from abc import ABC
 
 from repositories.users_repository import SQLAlchemyUsersRepository, UsersRepository
-from .base import SqlAlchemyUnitOfWork, AbstractUnitOfWork
+from .base_classes import SqlAlchemyUnitOfWork, AbstractUnitOfWork
 
 
-class UsersUnitOfWork(AbstractUnitOfWork, ABC):
+class UsersUnitOfWork(ABC):
     users: UsersRepository = None
 
 

@@ -1,10 +1,10 @@
 from abc import ABC
 
 from repositories.game_repository import SQLAlchemyGameRepository, GameRepository
-from .base import SqlAlchemyUnitOfWork, AbstractUnitOfWork
+from .base_classes import SqlAlchemyUnitOfWork, AbstractUnitOfWork
 
 
-class GameUnitOfWork(AbstractUnitOfWork, ABC):
+class GameUnitOfWork(ABC):
     games: GameRepository = None
 
 

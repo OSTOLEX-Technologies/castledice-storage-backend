@@ -2,6 +2,7 @@ import pytest
 from datetime import datetime
 from repositories.in_db_classes import GameInDB, UserInDB
 from uow.game_uow import GameUnitOfWork
+from uow.base_classes import AbstractUnitOfWork
 from repositories.game_repository import GameRepository
 from domain.game import Game
 from services.games_services import get_game, create_game
@@ -19,7 +20,7 @@ class FakeGamesRepository(GameRepository):
         return game
 
 
-class FakeUnitOfWork(GameUnitOfWork):
+class FakeUnitOfWork(AbstractUnitOfWork, GameUnitOfWork):
     def __init__(self):
         self.games = FakeGamesRepository(games={})
         self.commited = False
@@ -39,7 +40,7 @@ class FakeUnitOfWork(GameUnitOfWork):
 
 
 @pytest.mark.asyncio
-async def test_get_game():
+async def test_get_game_returns_correct_game():
     winner = UserInDB(id=2, name="test2", wallet=None, games=[], games_won=[])
     game = GameInDB(id=1, config={"test": "test"}, game_started_time=datetime.utcnow(), game_ended_time=datetime.utcnow(), users=[
                 UserInDB(id=1, name="test", wallet=None, games=[], games_won=[]),
@@ -47,15 +48,15 @@ async def test_get_game():
     ], winner=winner, history={"test": "test"})
     uow = FakeUnitOfWork()
     uow.games.games = {1: game}
-    assert (await get_game(1, uow)).id == 1
+    assert (await get_game(1, uow)) == game
     assert not uow.commited
 
 
 @pytest.mark.asyncio
-async def test_create_game():
+async def test_create_game_creates_game():
     game = GameInDB(id=1, config={"test": "test"}, game_started_time=datetime.utcnow(),
                     game_ended_time=datetime.utcnow(), users=[], winner=None, history=None)
     uow = FakeUnitOfWork()
     await create_game(game, uow)
-    assert uow.games.games[1].id == game.id
+    assert uow.games.games[1] == game
     assert uow.commited

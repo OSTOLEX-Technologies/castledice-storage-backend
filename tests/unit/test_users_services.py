@@ -5,6 +5,7 @@ from repositories.users_repository import UsersRepository
 from services.users_services import get_user, create_user
 from domain.user import User
 from uow.users_uow import UsersUnitOfWork
+from uow.base_classes import AbstractUnitOfWork
 
 
 class FakeUsersRepository(UsersRepository):
@@ -19,7 +20,7 @@ class FakeUsersRepository(UsersRepository):
         return user
 
 
-class FakeUnitOfWork(UsersUnitOfWork):
+class FakeUnitOfWork(AbstractUnitOfWork, UsersUnitOfWork):
     def __init__(self):
         self.users = FakeUsersRepository(users={})
         self.commited = False

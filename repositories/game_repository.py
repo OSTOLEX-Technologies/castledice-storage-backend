@@ -4,16 +4,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from domain.game import Game
 from .exceptions import DoesNotExistException
 from db import Game as SQLAlchemyGame, User as SQLAlchemyUser
-from .in_db_classes import UserInDB
-
-
-class GameInDB(Game):
-    id: int
-    users: list[UserInDB]
-    winner: UserInDB | None
+from .in_db_classes import GameInDB
 
 
 class GameRepository:
