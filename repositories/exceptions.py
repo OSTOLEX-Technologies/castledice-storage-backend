@@ -6,3 +6,11 @@ class DoesNotExistException(Exception):
 
     def __str__(self):
         return f"The {self.class_name} with the given id {self.id} does not exist."
+
+
+class UserDoesNotExist(DoesNotExistException):
+    class_name = "User"
+
+
+class GameDoesNotExist(DoesNotExistException):
+    class_name = "Game"

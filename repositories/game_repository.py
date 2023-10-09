@@ -4,21 +4,19 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from .exceptions import DoesNotExistException
+from .exceptions import DoesNotExistException, GameDoesNotExist, UserDoesNotExist
 from db import Game as SQLAlchemyGame, User as SQLAlchemyUser
-from .in_db_classes import GameInDB
+from .in_db_classes import GameInDB, CreateGame
+from domain.game import Game
 
 
 class GameRepository:
-    class GameDoesNotExist(DoesNotExistException):
-        class_name = 'Game'
-
     @abc.abstractmethod
     def get_game(self, game_id: int) -> GameInDB:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def create_game(self, game: GameInDB):
+    def create_game(self, game: Game):
         raise NotImplementedError
 
     # @abc.abstractmethod
@@ -42,12 +40,16 @@ class SQLAlchemyGameRepository(GameRepository):
             )
         )).first()
         if not game:
-            raise self.GameDoesNotExist(game_id)
+            raise GameDoesNotExist(game_id)
         return game.to_domain()
 
-    async def create_game(self, game: GameInDB) -> GameInDB:
+    async def create_game(self, game: CreateGame) -> GameInDB:
         users = (await self.session.execute(
-            select(SQLAlchemyUser).filter(SQLAlchemyUser.id.in_([user.id for user in game.users])))).scalars().all()
+            select(SQLAlchemyUser).filter(SQLAlchemyUser.id.in_([id_ for id_ in game.users])))).scalars().all()
+        if not len(users) == len(game.users):
+            diff = set(game.users) - set([user.id for user in users])
+            for id_ in diff:
+                raise UserDoesNotExist(id_)
         game_in_db = SQLAlchemyGame(
             config=game.config,
             game_started_time=game.game_started_time,
@@ -58,4 +60,9 @@ class SQLAlchemyGameRepository(GameRepository):
         )
         self.session.add(game_in_db)
         await self.session.flush()
-        return game_in_db.to_domain()
+        result = (await self.session.scalars(
+            select(SQLAlchemyGame).filter(SQLAlchemyGame.id == game_in_db.id).options(
+                selectinload(SQLAlchemyGame.users).subqueryload(SQLAlchemyUser.wallet),
+                selectinload(SQLAlchemyGame.winner),
+            ))).first()
+        return result.to_domain()

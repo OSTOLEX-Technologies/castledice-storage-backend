@@ -23,6 +23,12 @@ integration-tests: up-test
 e2e-tests: up-test
 	docker-compose run --rm --no-deps --entrypoint=python db.py && pytest app /tests/e2e
 
+e2e-tests-sqlite:
+	DATABASE_TYPE=sqlite pytest tests/e2e
+
+test-sqlite:
+	DATABASE_TYPE=sqlite pytest -s
+
 db:
 	docker-compose up -d db
 

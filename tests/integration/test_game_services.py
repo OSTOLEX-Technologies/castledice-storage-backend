@@ -4,6 +4,8 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
+from repositories.exceptions import GameDoesNotExist
+from repositories.in_db_classes import CreateGame
 from services.games_services import get_game, create_game
 from uow.game_uow import GameSqlAlchemyUnitOfWork
 from db import Game as SQLAlchemyGame, User as SQLAlchemyUser
@@ -25,8 +27,8 @@ async def create_user_manual(session, name: str):
 async def create_game_manual(session):
     game = SQLAlchemyGame(config={"test": "test"}, game_started_time=datetime.utcnow(),
                           game_ended_time=datetime.utcnow(), users=[
-        await create_user_manual(session, "test1"),
-        await create_user_manual(session, "test2")
+            await create_user_manual(session, "test1"),
+            await create_user_manual(session, "test2")
         ], winner=None, history=None)
     session.add(game)
     await session.commit()
@@ -46,16 +48,20 @@ async def test_get_game_returns_found_game(session_factory):
 @pytest.mark.asyncio
 async def test_get_game_raises_exception_when_game_not_found(session_factory):
     uow = GameSqlAlchemyUnitOfWork(session_factory)
-    with pytest.raises(GameRepository.GameDoesNotExist):
+    with pytest.raises(GameDoesNotExist):
         await get_game(1, uow)
 
 
 @pytest.mark.asyncio
 async def test_create_game_creates_game(session_factory):
+    async with session_factory() as session:
+        user1 = await create_user_manual(session, "test1")
+        user2 = await create_user_manual(session, "test2")
+
     uow = GameSqlAlchemyUnitOfWork(session_factory)
-    game = await create_game(SQLAlchemyGame(config={"test": "test"}, game_started_time=datetime.utcnow(),
-                                            game_ended_time=datetime.utcnow(), users=[], winner=None, history=None),
-                             uow)
+    game = await create_game(CreateGame(config={"test": "test"}, game_started_time=datetime.utcnow(),
+                                  game_ended_time=datetime.utcnow(), users=[user1.id, user2.id],
+                                  winner=None, history=None) ,uow)
     assert game.id is not None
     game2 = await get_game(game.id, uow)
     assert game2 == game

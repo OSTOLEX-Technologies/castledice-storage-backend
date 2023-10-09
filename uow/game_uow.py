@@ -1,7 +1,7 @@
 from abc import ABC
 
 from repositories.game_repository import SQLAlchemyGameRepository, GameRepository
-from .base_classes import SqlAlchemyUnitOfWork, AbstractUnitOfWork
+from .base_classes import SqlAlchemyUnitOfWork
 
 
 class GameUnitOfWork(ABC):
