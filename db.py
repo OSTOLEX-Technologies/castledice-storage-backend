@@ -1,13 +1,15 @@
+import asyncio
 from datetime import datetime
 from typing import Optional
-
-from sqlalchemy import Column, create_engine, String, ForeignKey, JSON, DateTime, Table
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy import Column, String, ForeignKey, JSON, DateTime, Table
 from sqlalchemy.orm import relationship, mapped_column, Mapped, declarative_base
-from settings import DATABASE_URL
 
+from settings import DATABASE_URL
+from repositories.in_db_classes import UserInDB, GameInDB, WalletInDB
 
 Base = declarative_base()
-engine = create_engine(
+engine = create_async_engine(
     DATABASE_URL,
 )
 
@@ -31,6 +33,24 @@ class User(Base):
     def __repr__(self):
         return self.name
 
+    def to_domain(self) -> UserInDB:
+        return UserInDB(
+            id=self.id,
+            name=self.name,
+            wallet=WalletInDB(id=self.wallet.id, address=self.wallet.address) if self.wallet else None,
+            games=[game.to_domain_without_users() for game in self.games],
+            games_won=[game.to_domain_without_users() for game in self.games_won],
+        )
+
+    def to_domain_without_games(self) -> UserInDB:
+        return UserInDB(
+            id=self.id,
+            name=self.name,
+            wallet=WalletInDB(id=self.wallet.id, address=self.wallet.address) if self.wallet else None,
+            games=[],
+            games_won=[],
+        )
+
 
 class Game(Base):
     __tablename__ = "games"
@@ -44,6 +64,28 @@ class Game(Base):
     users: Mapped[list["User"]] = relationship(secondary=users_to_games, back_populates="games")
     history: Mapped[Optional[list[dict | list] | dict]] = mapped_column(type_=JSON)
 
+    def to_domain(self) -> GameInDB:
+        return GameInDB(
+            id=self.id,
+            config=self.config,
+            game_started_time=self.game_started_time,
+            game_ended_time=self.game_ended_time,
+            winner=self.winner,
+            users=[user.to_domain_without_games() for user in self.users],
+            history=self.history,
+        )
+
+    def to_domain_without_users(self) -> GameInDB:
+        return GameInDB(
+            id=self.id,
+            config=self.config,
+            game_started_time=self.game_started_time,
+            game_ended_time=self.game_ended_time,
+            winner=self.winner,
+            users=[],
+            history=self.history,
+        )
+
 
 class Wallet(Base):
     __tablename__ = "wallets"
@@ -53,6 +95,18 @@ class Wallet(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     user: Mapped["User"] = relationship(back_populates="wallet")
 
+    def to_domain(self) -> WalletInDB:
+        return WalletInDB(
+            id=self.id,
+            address=self.address,
+        )
+
+
+async def init_models():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+
 
 if __name__ == "__main__":
-    Base.metadata.create_all(engine)
+    asyncio.run(init_models())

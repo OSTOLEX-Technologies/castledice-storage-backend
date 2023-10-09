@@ -1,14 +1,7 @@
-
-from pydantic import BaseModel
-
-from domain.user import User
+from pydantic import ConfigDict, BaseModel
 
 
 class Wallet(BaseModel):
     address: str
-    user: User
-
-    class Config:
-        extra = 'ignore'
-        from_attributes = True
+    model_config = ConfigDict(extra='ignore', from_attributes=True)
 
