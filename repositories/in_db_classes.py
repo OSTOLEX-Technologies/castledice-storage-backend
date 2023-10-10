@@ -18,3 +18,7 @@ class GameInDB(Game):
     id: int | None
     users: list[UserInDB]
     winner: UserInDB | None
+
+
+class CreateGame(Game):
+    users: list[int]

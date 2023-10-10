@@ -6,14 +6,11 @@ from sqlalchemy.orm import joinedload, selectinload
 
 from db import User as SQLAlchemyUser, Wallet as SQLAlchemyWallet
 from domain.user import User
-from repositories.exceptions import DoesNotExistException
+from repositories.exceptions import DoesNotExistException, UserDoesNotExist
 from repositories.in_db_classes import UserInDB
 
 
 class UsersRepository(abc.ABC):
-    class UserDoesNotExist(DoesNotExistException):
-        class_name = 'User'
-
     @abc.abstractmethod
     async def get_user(self, user_id: int) -> UserInDB:
         raise NotImplementedError
@@ -36,7 +33,7 @@ class SQLAlchemyUsersRepository(UsersRepository):
             joinedload(SQLAlchemyUser.games_won)
         ))).first()
         if not user:
-            raise self.UserDoesNotExist(user_id)
+            raise UserDoesNotExist(user_id)
         return user.to_domain()
 
     async def create_user(self, user: User) -> UserInDB:

@@ -10,7 +10,7 @@ from repositories.in_db_classes import UserInDB, GameInDB, WalletInDB
 
 Base = declarative_base()
 engine = create_async_engine(
-    DATABASE_URL,
+    DATABASE_URL(),
 )
 
 users_to_games = Table(
@@ -58,7 +58,7 @@ class Game(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     config: Mapped[Optional[dict | list]] = mapped_column(type_=JSON)
     game_started_time: Mapped[datetime] = mapped_column(type_=DateTime)
-    game_ended_time: Mapped[datetime] = mapped_column(type_=DateTime)
+    game_ended_time: Mapped[Optional[datetime]] = mapped_column(type_=DateTime)
     winner_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"))
     winner: Mapped[Optional["User"]] = relationship(back_populates="games_won")
     users: Mapped[list["User"]] = relationship(secondary=users_to_games, back_populates="games")

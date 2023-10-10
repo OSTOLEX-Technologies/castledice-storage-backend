@@ -2,6 +2,7 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
+from repositories.exceptions import UserDoesNotExist
 from services.users_services import get_user, create_user
 from uow.users_uow import UsersSqlAlchemyUnitOfWork
 from repositories.users_repository import UsersRepository
@@ -36,7 +37,7 @@ async def test_get_user_returns_found_user(session_factory):
 @pytest.mark.asyncio
 async def test_get_user_raises_exception_when_user_not_found(session_factory):
     uow = UsersSqlAlchemyUnitOfWork(session_factory)
-    with pytest.raises(UsersRepository.UserDoesNotExist):
+    with pytest.raises(UserDoesNotExist):
         await get_user(1, uow)
 
 

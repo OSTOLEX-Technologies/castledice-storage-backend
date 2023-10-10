@@ -8,7 +8,7 @@ async def get_game(game_id: int, uow: GameUnitOfWork) -> GameInDB:
         return await uow.games.get_game(game_id)
 
 
-async def create_game(game: GameInDB, uow: GameUnitOfWork) -> GameInDB:
+async def create_game(game: Game, uow: GameUnitOfWork) -> GameInDB:
     async with uow:
         game = await uow.games.create_game(game)
         await uow.commit()
