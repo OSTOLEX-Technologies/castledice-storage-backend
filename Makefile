@@ -29,6 +29,12 @@ e2e-tests-sqlite:
 test-sqlite:
 	DATABASE_TYPE=sqlite pytest -s
 
+create-migrations-sqlite:
+	DATABASE_TYPE=sqlite alembic revision --autogenerate -m "$(message)"
+
+alembic-upgrade-sqlite:
+	DATABASE_TYPE=sqlite alembic upgrade head
+
 db:
 	docker-compose up -d db
 
