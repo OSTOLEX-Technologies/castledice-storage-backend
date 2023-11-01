@@ -41,7 +41,7 @@ class FakeUnitOfWork(AbstractUnitOfWork, UsersUnitOfWork):
 
 @pytest.mark.asyncio
 async def test_get_user_uses_passed_uow():
-    user = User(name="test", wallet=Wallet(address="test"), games=[], games_won=[])
+    user = User(name="test", auth_id=1, wallet=Wallet(address="test"), games=[], games_won=[])
     uow = FakeUnitOfWork()
     uow.users.users = {1: user}
     assert (await get_user(1, uow)).name == user.name
@@ -50,7 +50,7 @@ async def test_get_user_uses_passed_uow():
 
 @pytest.mark.asyncio
 async def test_create_user_uses_passed_uow():
-    user = User(name="test", wallet=Wallet(address="test"), games=[], games_won=[])
+    user = User(name="test", auth_id=1, wallet=Wallet(address="test"), games=[], games_won=[])
     uow = FakeUnitOfWork()
     await create_user(user, uow)
     assert uow.users.users[1].name == user.name

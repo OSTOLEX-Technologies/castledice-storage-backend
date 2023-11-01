@@ -25,6 +25,7 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    auth_id: Mapped[int] = mapped_column(unique=True)
     name: Mapped[str]
     wallet: Mapped["Wallet"] = relationship(uselist=False, back_populates="user")
     games: Mapped[list["Game"]] = relationship(secondary=users_to_games, back_populates="users")
@@ -37,6 +38,7 @@ class User(Base):
         return UserInDB(
             id=self.id,
             name=self.name,
+            auth_id=self.auth_id,
             wallet=WalletInDB(id=self.wallet.id, address=self.wallet.address) if self.wallet else None,
             games=[game.to_domain_without_users() for game in self.games],
             games_won=[game.to_domain_without_users() for game in self.games_won],
@@ -46,6 +48,7 @@ class User(Base):
         return UserInDB(
             id=self.id,
             name=self.name,
+            auth_id=self.auth_id,
             wallet=WalletInDB(id=self.wallet.id, address=self.wallet.address) if self.wallet else None,
             games=[],
             games_won=[],

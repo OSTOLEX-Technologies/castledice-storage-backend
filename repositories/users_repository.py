@@ -39,6 +39,7 @@ class SQLAlchemyUsersRepository(UsersRepository):
     async def create_user(self, user: User) -> UserInDB:
         orm_user = SQLAlchemyUser(
             name=user.name,
+            auth_id=user.auth_id,
         )
         self.session.add(orm_user)
 

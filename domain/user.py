@@ -5,6 +5,7 @@ from domain.wallet import Wallet
 
 class User(BaseModel):
     name: str
+    auth_id: int
     wallet: Wallet | None = None
     games: list['Game'] | None = None
     games_won: list['Game'] | None = None

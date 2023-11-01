@@ -5,7 +5,7 @@ from uow.users_uow import UsersSqlAlchemyUnitOfWork
 
 @pytest.mark.asyncio
 async def test_get_user_by_id_returns_found_user(client, create_user, default_session_factory):
-    _, user = await create_user(default_session_factory, "test")
+    _, user = await create_user(default_session_factory, "test", auth_id=1)
     response = client.get(f"/user/{user.id}")
     assert response.status_code == 200
     assert response.json() == user.model_dump()
@@ -20,10 +20,11 @@ async def test_get_user_by_id_returns_not_found(client, default_session_factory)
 
 @pytest.mark.asyncio
 async def test_create_user_endpoint_creates_user(client, default_session_factory):
-    response = client.post("/user", json={"name": "test", "wallet": {"address": "test"}})
+    response = client.post("/user", json={"name": "test", "auth_id": 1, "wallet": {"address": "test"}})
     assert response.status_code == 201
     assert response.json()["status"] == "created"
     assert response.json()["user"]["name"] == "test"
+    assert response.json()["user"]["auth_id"] == 1
     assert response.json()["user"]["wallet"]["address"] == "test"
 
     user = await get_user(response.json()["user"]["id"], UsersSqlAlchemyUnitOfWork(default_session_factory))

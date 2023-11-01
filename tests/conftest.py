@@ -52,9 +52,9 @@ def default_session_factory(create_default_db):
 
 @pytest.fixture
 def create_user():
-    async def wrap(session_factory, name: str):
+    async def wrap(session_factory, name: str, auth_id: int):
         async with session_factory() as session:
-            user = SQLAlchemyUser(name=name)
+            user = SQLAlchemyUser(name=name, auth_id=auth_id)
             session.add(user)
             await session.commit()
             result = await session.scalars(
@@ -75,8 +75,8 @@ def create_game(create_user):
         async with session_factory() as session:
             game = SQLAlchemyGame(config={"test": "test"}, game_started_time=datetime.utcnow(),
                                   game_ended_time=datetime.utcnow(), users=[
-                    (await create_user(session_factory, "test1"))[0],
-                    (await create_user(session_factory, "test2"))[0]
+                    (await create_user(session_factory, "test1", auth_id=1))[0],
+                    (await create_user(session_factory, "test2", auth_id=2))[0]
                 ], winner=None, history=None)
             session.add(game)
             await session.commit()

@@ -12,7 +12,7 @@ from domain.user import User
 
 
 async def create_user_manual(session):
-    user = SQLAlchemyUser(name="test")
+    user = SQLAlchemyUser(name="test", auth_id=1)
     session.add(user)
     await session.commit()
     result = await session.scalars(
@@ -44,9 +44,9 @@ async def test_get_user_raises_exception_when_user_not_found(session_factory):
 @pytest.mark.asyncio
 async def test_create_user_creates_user(session_factory):
     uow = UsersSqlAlchemyUnitOfWork(session_factory)
-    await create_user(User(name="test1", wallet=Wallet(address="address1")),
+    await create_user(User(name="test1", auth_id=1, wallet=Wallet(address="address1")),
                       uow)  # just to check that create_user() returns correct user after creation
-    user = await create_user(User(name="test2", wallet=Wallet(address="address2")), uow)
+    user = await create_user(User(name="test2", auth_id=2, wallet=Wallet(address="address2")), uow)
 
     assert user.id is not None
     user2 = await get_user(2, uow)

@@ -41,9 +41,9 @@ class FakeUnitOfWork(AbstractUnitOfWork, GameUnitOfWork):
 
 @pytest.mark.asyncio
 async def test_get_game_returns_correct_game():
-    winner = UserInDB(id=2, name="test2", wallet=None, games=[], games_won=[])
+    winner = UserInDB(id=2, auth_id=2, name="test2", wallet=None, games=[], games_won=[])
     game = GameInDB(id=1, config={"test": "test"}, game_started_time=datetime.utcnow(), game_ended_time=datetime.utcnow(), users=[
-                UserInDB(id=1, name="test", wallet=None, games=[], games_won=[]),
+                UserInDB(id=1, auth_id=1, name="test", wallet=None, games=[], games_won=[]),
                 winner,
     ], winner=winner, history={"test": "test"})
     uow = FakeUnitOfWork()

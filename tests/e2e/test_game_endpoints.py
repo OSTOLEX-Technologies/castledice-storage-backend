@@ -21,8 +21,8 @@ async def test_get_game_by_id_returns_not_found(client, default_session_factory)
 
 @pytest.mark.asyncio
 async def test_create_game_endpoint_creates_game(client, create_user, default_session_factory):
-    _, user1 = await create_user(default_session_factory, "test1")
-    _, user2 = await create_user(default_session_factory, "test2")
+    _, user1 = await create_user(default_session_factory, "test1", auth_id=1)
+    _, user2 = await create_user(default_session_factory, "test2", auth_id=2)
     response = client.post("/game", json={"config": {"test": "test"}, "game_started_time": "2021-01-01T00:00:00",
                                           "game_ended_time": None, "users": [user1.id, user2.id],
                                           "winner": None, "history": None})
