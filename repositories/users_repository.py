@@ -52,7 +52,8 @@ class SQLAlchemyUsersRepository(UsersRepository):
         await self.session.flush()
         result = (await self.session.scalars(
             select(SQLAlchemyUser).filter(SQLAlchemyUser.id == orm_user.id).options(joinedload(SQLAlchemyUser.wallet),
-                                                                                joinedload(SQLAlchemyUser.games),
-                                                                                joinedload(SQLAlchemyUser.games_won))
+                                                                                    joinedload(SQLAlchemyUser.games),
+                                                                                    joinedload(
+                                                                                        SQLAlchemyUser.games_won))
         )).first()
         return result.to_domain()

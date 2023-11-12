@@ -24,10 +24,10 @@ e2e-tests: up-test
 	docker-compose run --rm --no-deps --entrypoint=python db.py && pytest app /tests/e2e
 
 e2e-tests-sqlite:
-	DATABASE_TYPE=sqlite pytest tests/e2e
+	DATABASE_TYPE=sqlite-memory pytest tests/e2e
 
-test-sqlite:
-	DATABASE_TYPE=sqlite pytest -s
+test-sqlite-memory:
+	DATABASE_TYPE=sqlite-memory pytest -s
 
 create-migrations-sqlite:
 	DATABASE_TYPE=sqlite alembic revision --autogenerate -m "$(message)"

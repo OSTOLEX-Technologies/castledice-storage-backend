@@ -10,6 +10,7 @@ POSTGRES_PORT = os.environ.get("POSTGRES_PORT", "5432")
 
 DATABASE_TYPE = os.environ.get("DATABASE_TYPE", "postgres")
 
+
 def DATABASE_URL():
     return {
         "postgres": build_postgres(postgres_user=POSTGRES_USER,
@@ -17,5 +18,6 @@ def DATABASE_URL():
                                    postgres_db=POSTGRES_DB,
                                    postgres_host=POSTGRES_HOST,
                                    postgres_port=POSTGRES_PORT),
-        "sqlite": "sqlite+aiosqlite:///:memory:",
+        "sqlite-memory": "sqlite+aiosqlite:///:memory:",
+        "sqlite": "sqlite+aiosqlite:///db.sqlite3",
     }[DATABASE_TYPE]
