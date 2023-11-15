@@ -23,7 +23,7 @@ async def create_user_(user: User):
 
 
 @router.put("/authuser")
-async def _update_user_by_auth_id(user: User):
+async def update_user_by_auth_id_(user: User):
     uow = UsersSqlAlchemyUnitOfWork()
     user = await update_user_by_auth_id(user, uow)
     return {"status": "updated", "user": user.model_dump()}
