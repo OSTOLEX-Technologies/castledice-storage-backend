@@ -3,9 +3,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
 from repositories.exceptions import UserDoesNotExist
-from services.users_services import get_user, create_user
+from repositories.in_db_classes import WalletInDB
+from services.users_services import get_user, create_user, update_user_by_auth_id
 from uow.users_uow import UsersSqlAlchemyUnitOfWork
-from repositories.users_repository import UsersRepository
 from db import User as SQLAlchemyUser
 from domain.wallet import Wallet
 from domain.user import User
@@ -50,4 +50,31 @@ async def test_create_user_creates_user(session_factory):
 
     assert user.id is not None
     user2 = await get_user(2, uow)
+    assert user2 == user
+
+
+@pytest.mark.asyncio
+async def test_update_user_by_auth_id_updates_user(session_factory):
+    uow = UsersSqlAlchemyUnitOfWork(session_factory)
+    await create_user(User(name="test2", auth_id=1, wallet=Wallet(address="address2")), uow)
+    user = await update_user_by_auth_id(User(name="test3", auth_id=1, wallet=Wallet(address="address3")), uow)
+    assert user.name == "test3"
+    assert user.wallet.address == "address3"
+    assert user.id is not None
+    user2 = await get_user(1, uow)
+    assert user2 == user
+
+
+@pytest.mark.asyncio
+async def test_update_user_by_auth_id_updates_user_when_adding_wallet(session_factory):
+    uow = UsersSqlAlchemyUnitOfWork(session_factory)
+    await create_user(User(name="test1", auth_id=1), uow)
+    assert (await get_user(1, uow)).wallet is None
+
+    user = await update_user_by_auth_id(User(name="test1", auth_id=1, wallet=Wallet(address="address1")), uow)
+    assert user.name == "test1"
+    assert user.wallet.address == "address1"
+    assert isinstance(user.wallet, WalletInDB)
+    assert user.id is not None
+    user2 = await get_user(1, uow)
     assert user2 == user

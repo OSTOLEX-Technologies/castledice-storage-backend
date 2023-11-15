@@ -1,7 +1,7 @@
-from abc import ABC
+from abc import ABC, abstractproperty
 
 from repositories.users_repository import SQLAlchemyUsersRepository, UsersRepository
-from .base_classes import SqlAlchemyUnitOfWork
+from .base_classes import SqlAlchemyUnitOfWork, AbstractUnitOfWork
 
 
 class UsersUnitOfWork(ABC):

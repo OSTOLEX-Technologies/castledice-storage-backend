@@ -15,8 +15,15 @@ class FakeUsersRepository(UsersRepository):
     async def get_user(self, user_id: int) -> User:
         return self.users[user_id]
 
+    async def get_user_by_auth_id(self, auth_id: int) -> User:
+        return [user for user in self.users.values() if user.auth_id == auth_id][0]
+
     async def create_user(self, user: User) -> User:
         self.users[max(self.users or [0]) + 1] = user
+        return user
+
+    async def update_user(self, user: User) -> User:
+        self.users[user.id] = user
         return user
 
 

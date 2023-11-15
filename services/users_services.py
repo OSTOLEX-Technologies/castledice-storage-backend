@@ -13,3 +13,16 @@ async def create_user(user: User, uow: UsersUnitOfWork) -> UserInDB:
         user = await uow.users.create_user(user)
         await uow.commit()
         return user
+
+
+async def update_user_by_auth_id(user_data: User, uow: UsersUnitOfWork) -> User:
+    async with uow:
+        user = await uow.users.get_user_by_auth_id(user_data.auth_id)
+        user.name = user_data.name
+        if user_data.wallet:
+            if not user.wallet:
+                user.wallet = user_data.wallet
+            user.wallet.address = user_data.wallet.address
+        updated_user = await uow.users.update_user(user_data)
+        await uow.commit()
+        return updated_user

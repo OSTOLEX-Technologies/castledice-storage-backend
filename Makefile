@@ -27,7 +27,7 @@ e2e-tests-sqlite:
 	DATABASE_TYPE=sqlite-memory pytest tests/e2e
 
 test-sqlite-memory:
-	DATABASE_TYPE=sqlite-memory pytest -s
+	DATABASE_TYPE=sqlite-memory pytest -s -v
 
 create-migrations-sqlite:
 	DATABASE_TYPE=sqlite alembic revision --autogenerate -m "$(message)"
