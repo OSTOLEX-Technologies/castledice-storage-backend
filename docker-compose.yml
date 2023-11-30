@@ -6,6 +6,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        PLATFORM: ${PLATFORM:-linux/amd64}
     depends_on:
       db:
         condition: service_healthy
@@ -21,6 +23,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        PLATFORM: ${PLATFORM:-linux/amd64}
     depends_on:
       test-db:
         condition: service_healthy

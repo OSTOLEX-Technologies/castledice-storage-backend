@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ "$DATABASE" = "postgres" ]
+if [ "$MODE" = "DEV" ] && [ "$DATABASE" = "postgres" ]
 then
     echo "Waiting for postgres..."
 
@@ -11,6 +11,12 @@ then
     echo "PostgreSQL started"
 fi
 
-pip install -r requirements.txt
-uvicorn main:app --reload --host 0.0.0.0 --port 80
+python alembic upgrade head
+
+if [ "$MODE" = "PRODUCTION" ] || [ "$MODE" = "STAGING" ]
+then
+  echo "Running production server"
+  uvicorn --port 8000 --host 0.0.0.0 --workers 5 main:app
+fi
+
 exec "$@"
