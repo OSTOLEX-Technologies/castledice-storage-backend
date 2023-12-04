@@ -17,9 +17,9 @@ async def create_user_manual(session, name: str, auth_id: int):
     session.add(user)
     await session.commit()
     result = await session.scalars(
-        select(SQLAlchemyUser).filter(SQLAlchemyUser.id == user.id).options(joinedload(SQLAlchemyUser.wallet),
-                                                                            joinedload(SQLAlchemyUser.games),
-                                                                            joinedload(SQLAlchemyUser.games_won))
+        select(SQLAlchemyUser).filter(SQLAlchemyUser.auth_id == user.auth_id).options(joinedload(SQLAlchemyUser.wallet),
+                                                                                      joinedload(SQLAlchemyUser.games),
+                                                                                      joinedload(SQLAlchemyUser.games_won))
     )
     return result.first()
 
@@ -60,7 +60,7 @@ async def test_create_game_creates_game(session_factory):
 
     uow = GameSqlAlchemyUnitOfWork(session_factory)
     game = await create_game(CreateGame(config={"test": "test"}, game_started_time=datetime.utcnow(),
-                                        game_ended_time=datetime.utcnow(), users=[user1.id, user2.id],
+                                        game_ended_time=datetime.utcnow(), users=[user1.auth_id, user2.auth_id],
                                         winner=None, history=None), uow)
     assert game.id is not None
     game2 = await get_game(game.id, uow)

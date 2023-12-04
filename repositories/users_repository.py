@@ -12,7 +12,7 @@ from repositories.in_db_classes import UserInDB
 
 class UsersRepository(abc.ABC):
     @abc.abstractmethod
-    async def get_user(self, user_id: int) -> UserInDB:
+    async def get_user(self, auth_id: int) -> UserInDB:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -42,10 +42,10 @@ class SQLAlchemyUsersRepository(UsersRepository):
         ))).first()
         return user
 
-    async def get_user(self, user_id: int) -> UserInDB:
-        user = await self._get_user_with_filter(SQLAlchemyUser.id == user_id)
+    async def get_user(self, auth_id: int) -> UserInDB:
+        user = await self._get_user_with_filter(SQLAlchemyUser.auth_id == auth_id)
         if not user:
-            raise UserDoesNotExist(user_id)
+            raise UserDoesNotExist(auth_id)
         return user.to_domain()
 
     async def get_user_by_auth_id(self, auth_id: int) -> UserInDB:
@@ -68,7 +68,7 @@ class SQLAlchemyUsersRepository(UsersRepository):
             )
             self.session.add(wallet)
         await self.session.flush()
-        result = await self._get_user_with_filter(SQLAlchemyUser.id == orm_user.id)
+        result = await self._get_user_with_filter(SQLAlchemyUser.auth_id == orm_user.auth_id)
         return result.to_domain()
 
     async def update_user(self, user: User) -> UserInDB:

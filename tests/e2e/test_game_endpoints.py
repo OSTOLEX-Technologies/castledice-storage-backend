@@ -16,7 +16,7 @@ async def test_get_game_by_id_returns_found_game(client, create_game, default_se
 async def test_get_game_by_id_returns_not_found(client, default_session_factory):
     response = client.get("/game/1")
     assert response.status_code == 404
-    assert response.json() == {"detail": "The Game with the given id 1 does not exist."}
+    assert response.json() == {"detail": "The Game with the given auth_id 1 does not exist."}
 
 
 @pytest.mark.asyncio
@@ -24,7 +24,7 @@ async def test_create_game_endpoint_creates_game(client, create_user, default_se
     _, user1 = await create_user(default_session_factory, "test1", auth_id=1)
     _, user2 = await create_user(default_session_factory, "test2", auth_id=2)
     response = client.post("/game", json={"config": {"test": "test"}, "game_started_time": "2021-01-01T00:00:00",
-                                          "game_ended_time": None, "users": [user1.id, user2.id],
+                                          "game_ended_time": None, "users": [user1.auth_id, user2.auth_id],
                                           "winner": None, "history": None})
     assert response.status_code == 201
     assert response.json()["status"] == "created"
@@ -41,4 +41,4 @@ async def test_create_game_endpoint_returns_not_found_when_user_does_not_exist(c
                                           "winner": None, "history": None})
     assert response.status_code == 404
     assert (response.json() ==
-            {"detail": "The User with the given id 1 does not exist."})
+            {"detail": "The User with the given auth_id 1 does not exist."})

@@ -16,16 +16,15 @@ engine = create_async_engine(
 users_to_games = Table(
     "users_to_games",
     Base.metadata,
-    Column("users", ForeignKey("users.id")),
-    Column("games", ForeignKey("games.id")),
+    Column("users", ForeignKey("users.auth_id", ondelete="CASCADE", name="fk_users")),
+    Column("games", ForeignKey("games.id", ondelete="CASCADE", name="fk_games")),
 )
 
 
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    auth_id: Mapped[int] = mapped_column(unique=True)
+    auth_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str | None]
     wallet: Mapped["Wallet"] = relationship(uselist=False, back_populates="user")
     games: Mapped[list["Game"]] = relationship(secondary=users_to_games, back_populates="users")
@@ -36,20 +35,18 @@ class User(Base):
 
     def to_domain(self) -> UserInDB:
         return UserInDB(
-            id=self.id,
             name=self.name,
             auth_id=self.auth_id,
-            wallet=WalletInDB(id=self.wallet.id, address=self.wallet.address) if self.wallet else None,
+            wallet=WalletInDB(address=self.wallet.address) if self.wallet else None,
             games=[game.to_domain_without_users() for game in self.games],
             games_won=[game.to_domain_without_users() for game in self.games_won],
         )
 
     def to_domain_without_games(self) -> UserInDB:
         return UserInDB(
-            id=self.id,
             name=self.name,
             auth_id=self.auth_id,
-            wallet=WalletInDB(id=self.wallet.id, address=self.wallet.address) if self.wallet else None,
+            wallet=WalletInDB(address=self.wallet.address) if self.wallet else None,
             games=[],
             games_won=[],
         )
@@ -62,7 +59,8 @@ class Game(Base):
     config: Mapped[Optional[dict | list]] = mapped_column(type_=JSON)
     game_started_time: Mapped[datetime] = mapped_column(type_=DateTime)
     game_ended_time: Mapped[Optional[datetime]] = mapped_column(type_=DateTime)
-    winner_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"))
+    winner_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("users.auth_id", ondelete="CASCADE"))
     winner: Mapped[Optional["User"]] = relationship(back_populates="games_won")
     users: Mapped[list["User"]] = relationship(secondary=users_to_games, back_populates="games")
     history: Mapped[Optional[list[dict | list] | dict]] = mapped_column(type_=JSON)
@@ -93,14 +91,12 @@ class Game(Base):
 class Wallet(Base):
     __tablename__ = "wallets"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    address: Mapped[str] = mapped_column(String(64))
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    address: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.auth_id", ondelete="CASCADE"))
     user: Mapped["User"] = relationship(back_populates="wallet")
 
     def to_domain(self) -> WalletInDB:
         return WalletInDB(
-            id=self.id,
             address=self.address,
         )
 

@@ -45,9 +45,9 @@ class SQLAlchemyGameRepository(GameRepository):
 
     async def create_game(self, game: CreateGame) -> GameInDB:
         users = (await self.session.execute(
-            select(SQLAlchemyUser).filter(SQLAlchemyUser.id.in_([id_ for id_ in game.users])))).scalars().all()
+            select(SQLAlchemyUser).filter(SQLAlchemyUser.auth_id.in_([id_ for id_ in game.users])))).scalars().all()
         if not len(users) == len(game.users):
-            diff = set(game.users) - set([user.id for user in users])
+            diff = set(game.users) - set([user.auth_id for user in users])
             for id_ in diff:
                 raise UserDoesNotExist(id_)
         game_in_db = SQLAlchemyGame(

@@ -8,10 +8,10 @@ from services.users_services import get_user, create_user, update_user_by_auth_i
 router = APIRouter()
 
 
-@router.get("/user/{user_id}")
-async def get_user_by_id(user_id: int):
+@router.get("/user/{auth_id}")
+async def get_user_by_id(auth_id: int):
     uow = UsersSqlAlchemyUnitOfWork()
-    user = await get_user(user_id, uow)
+    user = await get_user(auth_id, uow)
     return user.model_dump()
 
 

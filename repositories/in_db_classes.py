@@ -4,11 +4,11 @@ from domain.wallet import Wallet
 
 
 class WalletInDB(Wallet):
-    id: int | None
+    pass
 
 
 class UserInDB(User):
-    id: int | None
+    auth_id: int | None = None
     wallet: WalletInDB | None = None
     games: list[int]
     games_won: list[int]

@@ -16,9 +16,9 @@ async def create_user_manual(session):
     session.add(user)
     await session.commit()
     result = await session.scalars(
-        select(SQLAlchemyUser).filter(SQLAlchemyUser.id == user.id).options(joinedload(SQLAlchemyUser.wallet),
-                                                                            joinedload(SQLAlchemyUser.games),
-                                                                            joinedload(SQLAlchemyUser.games_won))
+        select(SQLAlchemyUser).filter(SQLAlchemyUser.auth_id == user.auth_id).options(joinedload(SQLAlchemyUser.wallet),
+                                                                                      joinedload(SQLAlchemyUser.games),
+                                                                                      joinedload(SQLAlchemyUser.games_won))
     )
     return result.first()
 
@@ -30,7 +30,7 @@ async def test_get_user_returns_found_user(session_factory):
         user = user.to_domain()
 
     uow = UsersSqlAlchemyUnitOfWork(session_factory)
-    user2 = await get_user(user.id, uow)
+    user2 = await get_user(user.auth_id, uow)
     assert user2 == user
 
 
@@ -48,7 +48,7 @@ async def test_create_user_creates_user(session_factory):
                       uow)  # just to check that create_user() returns correct user after creation
     user = await create_user(User(name="test2", auth_id=2, wallet=Wallet(address="address2")), uow)
 
-    assert user.id is not None
+    assert user.auth_id is not None
     user2 = await get_user(2, uow)
     assert user2 == user
 
@@ -60,7 +60,7 @@ async def test_update_user_by_auth_id_updates_user(session_factory):
     user = await update_user_by_auth_id(User(name="test3", auth_id=1, wallet=Wallet(address="address3")), uow)
     assert user.name == "test3"
     assert user.wallet.address == "address3"
-    assert user.id is not None
+    assert user.auth_id is not None
     user2 = await get_user(1, uow)
     assert user2 == user
 
@@ -75,6 +75,6 @@ async def test_update_user_by_auth_id_updates_user_when_adding_wallet(session_fa
     assert user.name == "test1"
     assert user.wallet.address == "address1"
     assert isinstance(user.wallet, WalletInDB)
-    assert user.id is not None
+    assert user.auth_id is not None
     user2 = await get_user(1, uow)
     assert user2 == user

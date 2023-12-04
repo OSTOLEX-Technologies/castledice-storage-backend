@@ -12,8 +12,8 @@ class FakeUsersRepository(UsersRepository):
     def __init__(self, users: dict[int, User]):
         self.users = users
 
-    async def get_user(self, user_id: int) -> User:
-        return self.users[user_id]
+    async def get_user(self, auth_id: int) -> User:
+        return self.users[auth_id]
 
     async def get_user_by_auth_id(self, auth_id: int) -> User:
         return [user for user in self.users.values() if user.auth_id == auth_id][0]
