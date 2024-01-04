@@ -18,8 +18,10 @@ async def create_user_manual(session):
     result = await session.scalars(
         select(SQLAlchemyUser).filter(SQLAlchemyUser.auth_id == user.auth_id).options(joinedload(SQLAlchemyUser.wallet),
                                                                                       joinedload(SQLAlchemyUser.games),
-                                                                                      joinedload(SQLAlchemyUser.games_won))
-    )
+                                                                                      joinedload(
+                                                                                          SQLAlchemyUser.games_won),
+                                                                                      joinedload(SQLAlchemyUser.users_assets),
+                                                                                      ))
     return result.first()
 
 

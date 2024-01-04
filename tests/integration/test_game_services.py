@@ -9,7 +9,6 @@ from repositories.in_db_classes import CreateGame
 from services.games_services import get_game, create_game
 from uow.game_uow import GameSqlAlchemyUnitOfWork
 from db import Game as SQLAlchemyGame, User as SQLAlchemyUser
-from repositories.game_repository import GameRepository
 
 
 async def create_user_manual(session, name: str, auth_id: int):
@@ -19,8 +18,10 @@ async def create_user_manual(session, name: str, auth_id: int):
     result = await session.scalars(
         select(SQLAlchemyUser).filter(SQLAlchemyUser.auth_id == user.auth_id).options(joinedload(SQLAlchemyUser.wallet),
                                                                                       joinedload(SQLAlchemyUser.games),
-                                                                                      joinedload(SQLAlchemyUser.games_won))
-    )
+                                                                                      joinedload(
+                                                                                          SQLAlchemyUser.games_won),
+                                                                                      joinedload(SQLAlchemyUser.users_assets),
+                                                                                      ))
     return result.first()
 
 

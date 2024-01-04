@@ -58,11 +58,13 @@ def create_user():
             session.add(user)
             await session.commit()
             result = await session.scalars(
-                select(SQLAlchemyUser).filter(SQLAlchemyUser.auth_id == user.auth_id).options(joinedload(SQLAlchemyUser.wallet),
-                                                                                              joinedload(SQLAlchemyUser.games),
-                                                                                              joinedload(
-                                                                                        SQLAlchemyUser.games_won))
-            )
+                select(SQLAlchemyUser).filter(SQLAlchemyUser.auth_id == user.auth_id).options(
+                    joinedload(SQLAlchemyUser.wallet),
+                    joinedload(SQLAlchemyUser.games),
+                    joinedload(
+                        SQLAlchemyUser.games_won),
+                    joinedload(SQLAlchemyUser.users_assets),
+                    ))
             user = result.first()
             return user, user.to_domain()
 
@@ -85,6 +87,7 @@ def create_game(create_user):
                                                                                     joinedload(SQLAlchemyGame.winner))
             )
             return result.first().to_domain()
+
     return wrap
 
 

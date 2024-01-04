@@ -36,6 +36,7 @@ class SQLAlchemyGameRepository(GameRepository):
         game = (await self.session.scalars(
             select(SQLAlchemyGame).filter(SQLAlchemyGame.id == game_id).options(
                 selectinload(SQLAlchemyGame.users).subqueryload(SQLAlchemyUser.wallet),
+                selectinload(SQLAlchemyGame.users).subqueryload(SQLAlchemyUser.users_assets),
                 selectinload(SQLAlchemyGame.winner),
             )
         )).first()
@@ -63,6 +64,7 @@ class SQLAlchemyGameRepository(GameRepository):
         result = (await self.session.scalars(
             select(SQLAlchemyGame).filter(SQLAlchemyGame.id == game_in_db.id).options(
                 selectinload(SQLAlchemyGame.users).subqueryload(SQLAlchemyUser.wallet),
+                selectinload(SQLAlchemyGame.users).subqueryload(SQLAlchemyUser.users_assets),
                 selectinload(SQLAlchemyGame.winner),
             ))).first()
         return result.to_domain()

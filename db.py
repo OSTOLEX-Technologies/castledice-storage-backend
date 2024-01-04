@@ -2,11 +2,12 @@ import asyncio
 from datetime import datetime
 from typing import Optional
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy import Column, String, ForeignKey, JSON, DateTime, Table
+from sqlalchemy import Column, String, ForeignKey, JSON, DateTime, Table, BigInteger, Boolean
 from sqlalchemy.orm import relationship, mapped_column, Mapped, declarative_base
+from sqlalchemy.ext.associationproxy import association_proxy
 
 from settings import DATABASE_URL
-from repositories.in_db_classes import UserInDB, GameInDB, WalletInDB
+from repositories.in_db_classes import UserInDB, GameInDB, WalletInDB, AssetInDB, UsersAssetInDB
 
 Base = declarative_base()
 engine = create_async_engine(
@@ -20,6 +21,34 @@ users_to_games = Table(
     Column("games", ForeignKey("games.id", ondelete="CASCADE", name="fk_games")),
 )
 
+# users_assets = Table(
+#     "users_assets",
+#     Base.metadata,
+#     Column("users", ForeignKey("users.auth_id", ondelete="CASCADE", name="fk_users")),
+#     Column("assets", ForeignKey("assets.id", ondelete="CASCADE", name="fk_assets")),
+#     Column("nft_id", BigInteger()),
+#     Column("is_locked", Boolean()),
+# )
+
+
+class UsersAssets(Base):
+    __tablename__ = "users_assets"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.auth_id", ondelete="CASCADE"))
+    asset_id: Mapped[int] = mapped_column(ForeignKey("assets.id", ondelete="CASCADE"))
+    nft_id: Mapped[int] = mapped_column(primary_key=True, type_=BigInteger)
+    is_locked: Mapped[bool] = mapped_column()
+
+    user = relationship("User", backref="users_assets")
+    asset = relationship("Asset", backref="users_assets")
+
+    def to_domain(self):
+        return UsersAssetInDB(
+            nft_id=self.nft_id,
+            is_locked=self.is_locked,
+            asset=self.asset.to_domain()
+        )
+
 
 class User(Base):
     __tablename__ = "users"
@@ -29,6 +58,7 @@ class User(Base):
     wallet: Mapped["Wallet"] = relationship(uselist=False, back_populates="user")
     games: Mapped[list["Game"]] = relationship(secondary=users_to_games, back_populates="users")
     games_won: Mapped[list["Game"]] = relationship(back_populates="winner")
+    assets = association_proxy("users_assets", "assets")
 
     def __repr__(self):
         return self.name
@@ -40,6 +70,7 @@ class User(Base):
             wallet=WalletInDB(address=self.wallet.address) if self.wallet else None,
             games=[game.to_domain_without_users() for game in self.games],
             games_won=[game.to_domain_without_users() for game in self.games_won],
+            assets=[asset.to_domain() for asset in self.users_assets]
         )
 
     def to_domain_without_games(self) -> UserInDB:
@@ -49,6 +80,7 @@ class User(Base):
             wallet=WalletInDB(address=self.wallet.address) if self.wallet else None,
             games=[],
             games_won=[],
+            assets=[asset.to_domain() for asset in self.assets]
         )
 
 
@@ -101,11 +133,15 @@ class Wallet(Base):
         )
 
 
-async def init_models():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
+class Asset(Base):
+    __tablename__ = "assets"
 
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    ipfs_cid: Mapped[str] = mapped_column(String(64), unique=True)
+    users: list["User"] = association_proxy("users_assets", "user")
 
-if __name__ == "__main__":
-    asyncio.run(init_models())
+    def to_domain(self) -> AssetInDB:
+        return AssetInDB(
+            id=self.id,
+            ipfs_cid=self.ipfs_cid,
+        )

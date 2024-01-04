@@ -38,7 +38,8 @@ class SQLAlchemyUsersRepository(UsersRepository):
         .options(
             joinedload(SQLAlchemyUser.wallet),
             joinedload(SQLAlchemyUser.games),
-            joinedload(SQLAlchemyUser.games_won)
+            joinedload(SQLAlchemyUser.games_won),
+            joinedload(SQLAlchemyUser.users_assets),
         ))).first()
         return user
 

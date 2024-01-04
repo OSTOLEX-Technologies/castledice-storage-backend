@@ -1,6 +1,7 @@
 from domain.user import User
 from domain.game import Game
 from domain.wallet import Wallet
+from domain.assets import Asset, UsersAsset
 
 
 class WalletInDB(Wallet):
@@ -22,3 +23,11 @@ class GameInDB(Game):
 
 class CreateGame(Game):
     users: list[int]
+
+
+class AssetInDB(Asset):
+    pass
+
+
+class UsersAssetInDB(UsersAsset):
+    pass
