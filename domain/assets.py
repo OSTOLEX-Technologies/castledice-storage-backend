@@ -2,7 +2,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 class Asset(BaseModel):
-    id: int | None
+    id: int
     ipfs_cid: str
     model_config = ConfigDict(from_attributes=True)
 

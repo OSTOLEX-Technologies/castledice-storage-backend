@@ -14,3 +14,7 @@ class UserDoesNotExist(DoesNotExistException):
 
 class GameDoesNotExist(DoesNotExistException):
     class_name = "Game"
+
+
+class AssetDoesNotExist(DoesNotExistException):
+    class_name = "Asset"

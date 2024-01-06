@@ -26,7 +26,7 @@ class CreateGame(Game):
 
 
 class AssetInDB(Asset):
-    pass
+    id: int | None
 
 
 class UsersAssetInDB(UsersAsset):
