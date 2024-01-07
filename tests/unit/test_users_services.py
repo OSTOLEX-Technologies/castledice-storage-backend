@@ -27,7 +27,7 @@ class FakeUsersRepository(UsersRepository):
         return user
 
 
-class FakeUnitOfWork(AbstractUnitOfWork, UsersUnitOfWork):
+class FakeUnitOfWork(UsersUnitOfWork):
     def __init__(self):
         self.users = FakeUsersRepository(users={})
         self.commited = False

@@ -20,7 +20,7 @@ class FakeGamesRepository(GameRepository):
         return game
 
 
-class FakeUnitOfWork(AbstractUnitOfWork, GameUnitOfWork):
+class FakeUnitOfWork(GameUnitOfWork):
     def __init__(self):
         self.games = FakeGamesRepository(games={})
         self.commited = False
