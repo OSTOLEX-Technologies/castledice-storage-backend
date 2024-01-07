@@ -1,5 +1,4 @@
 import asyncio
-import os
 from datetime import datetime
 
 import pytest
@@ -10,7 +9,7 @@ from sqlalchemy.orm import sessionmaker, joinedload
 from fastapi.testclient import TestClient
 from uow.base_classes import DEFAULT_SESSION_FACTORY, engine as DEFAULT_ENGINE
 
-from db import Base, User as SQLAlchemyUser, Game as SQLAlchemyGame
+from db import Base, User as SQLAlchemyUser, Game as SQLAlchemyGame, Asset, UsersAssets as SQLAlchemyUsersAssets
 from main import app
 
 
@@ -89,6 +88,64 @@ def create_game(create_user):
             return result.first().to_domain()
 
     return wrap
+
+
+@pytest.fixture
+def general_create_asset():
+    async def wrap(session_factory, ipfs_cid: str, id_: int | None = None):
+        async with session_factory() as session:
+            asset = Asset(ipfs_cid=ipfs_cid)
+            if id_:
+                asset.id = id_
+            session.add(asset)
+            await session.commit()
+            result = await session.scalars(
+                select(Asset).filter(Asset.id == asset.id)
+            )
+            return result.first().to_domain()
+    return wrap
+
+
+@pytest.fixture
+def create_asset_inmemory(general_create_asset, session_factory):
+    async def wrap(ipfs_cid: str, id_: int | None = None):
+        return await general_create_asset(session_factory, ipfs_cid, id_)
+    return wrap
+
+
+@pytest.fixture
+def create_users_asset():
+    async def wrapper(session_factory, asset_id: int, user_id: int, nft_id: int, is_locked: bool = False):
+        async with session_factory() as session:
+            users_asset = SQLAlchemyUsersAssets(user_id=user_id, asset_id=asset_id, nft_id=nft_id, is_locked=is_locked)
+            session.add(users_asset)
+            await session.commit()
+            await session.refresh(users_asset)
+            users_asset = await session.scalars(
+                select(SQLAlchemyUsersAssets).filter(SQLAlchemyUsersAssets.nft_id == users_asset.nft_id).options(
+                    joinedload(SQLAlchemyUsersAssets.asset)
+                )
+            )
+            return users_asset.first().to_domain()
+    return wrapper
+
+
+@pytest.fixture
+def create_users_asset_inmemory(create_users_asset, session_factory):
+    async def wrapper(user_id: int, asset_id: int, nft_id: int, is_locked: bool = False):
+        return await create_users_asset(session_factory, asset_id, user_id, nft_id, is_locked)
+    return wrapper
+
+
+@pytest_asyncio.fixture
+async def create_assets_tests_data(create_asset_inmemory, create_user, session_factory, create_users_asset_inmemory):
+    await create_asset_inmemory("test_asset1", 1)
+    await create_asset_inmemory("test_asset2", 2)
+    await create_user(session_factory, "test_user1", 1)
+    await create_user(session_factory, "test_user2", 2)
+    await create_users_asset_inmemory(1, 1, 10, False)
+    await create_users_asset_inmemory(2, 2, 11, False)
+    await create_users_asset_inmemory(2, 2, 12, False)
 
 
 @pytest.fixture

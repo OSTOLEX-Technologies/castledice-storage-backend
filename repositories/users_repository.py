@@ -75,7 +75,7 @@ class SQLAlchemyUsersRepository(UsersRepository):
     async def update_user(self, user: User) -> UserInDB:
         orm_user = await self._get_user_with_filter(SQLAlchemyUser.auth_id == user.auth_id)
         if not orm_user:
-            raise DoesNotExistException(f'User with id {user.auth_id} does not exist')
+            raise UserDoesNotExist(f'User with id {user.auth_id} does not exist')
         orm_user.name = user.name
         if orm_user.wallet and orm_user.wallet.address:
             orm_user.wallet.address = user.wallet.address

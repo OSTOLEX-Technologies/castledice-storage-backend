@@ -1,15 +1,19 @@
 import asyncio
 from datetime import datetime
 from typing import Optional
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, AsyncAttrs
 from sqlalchemy import Column, String, ForeignKey, JSON, DateTime, Table, BigInteger, Boolean
-from sqlalchemy.orm import relationship, mapped_column, Mapped, declarative_base
+from sqlalchemy.orm import relationship, mapped_column, Mapped, DeclarativeBase
 from sqlalchemy.ext.associationproxy import association_proxy
 
 from settings import DATABASE_URL
 from repositories.in_db_classes import UserInDB, GameInDB, WalletInDB, AssetInDB, UsersAssetInDB
 
-Base = declarative_base()
+
+class Base(AsyncAttrs, DeclarativeBase):
+    pass
+
+
 engine = create_async_engine(
     DATABASE_URL(),
 )
@@ -46,7 +50,8 @@ class UsersAssets(Base):
         return UsersAssetInDB(
             nft_id=self.nft_id,
             is_locked=self.is_locked,
-            asset=self.asset.to_domain()
+            asset=self.asset.to_domain(),
+            user_id=self.user_id
         )
 
 

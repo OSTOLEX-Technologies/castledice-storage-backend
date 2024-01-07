@@ -16,7 +16,7 @@ async def test_get_game_by_id_returns_found_game(client, create_game, default_se
 async def test_get_game_by_id_returns_not_found(client, default_session_factory):
     response = client.get("/game/1")
     assert response.status_code == 404
-    assert response.json() == {"detail": "The Game with the given auth_id 1 does not exist."}
+    assert response.json() == {"detail": "The Game with the given id 1 does not exist."}
 
 
 @pytest.mark.asyncio

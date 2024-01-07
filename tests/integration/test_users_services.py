@@ -80,3 +80,10 @@ async def test_update_user_by_auth_id_updates_user_when_adding_wallet(session_fa
     assert user.auth_id is not None
     user2 = await get_user(1, uow)
     assert user2 == user
+
+
+@pytest.mark.asyncio
+async def test_update_user_by_auth_id_raises_exception_when_user_does_not_exist(session_factory):
+    uow = UsersSqlAlchemyUnitOfWork(session_factory)
+    with pytest.raises(UserDoesNotExist):
+        await update_user_by_auth_id(User(name="test1", auth_id=1, wallet=Wallet(address="address1")), uow)
