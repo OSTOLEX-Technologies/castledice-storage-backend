@@ -25,23 +25,16 @@ users_to_games = Table(
     Column("games", ForeignKey("games.id", ondelete="CASCADE", name="fk_games")),
 )
 
-# users_assets = Table(
-#     "users_assets",
-#     Base.metadata,
-#     Column("users", ForeignKey("users.auth_id", ondelete="CASCADE", name="fk_users")),
-#     Column("assets", ForeignKey("assets.id", ondelete="CASCADE", name="fk_assets")),
-#     Column("nft_id", BigInteger()),
-#     Column("is_locked", Boolean()),
-# )
-
 
 class UsersAssets(Base):
     __tablename__ = "users_assets"
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.auth_id", ondelete="CASCADE"))
     asset_id: Mapped[int] = mapped_column(ForeignKey("assets.id", ondelete="CASCADE"))
-    nft_id: Mapped[int] = mapped_column(primary_key=True, type_=BigInteger)
+    nft_id: Mapped[int] = mapped_column(primary_key=True, type_=BigInteger, autoincrement=True)
     is_locked: Mapped[bool] = mapped_column()
+    is_minted: Mapped[bool] = mapped_column()
+    # TODO: add is_minted column and autoincrement to nft_id
 
     user = relationship("User", backref="users_assets")
     asset = relationship("Asset", backref="users_assets")
@@ -64,6 +57,7 @@ class User(Base):
     games: Mapped[list["Game"]] = relationship(secondary=users_to_games, back_populates="users")
     games_won: Mapped[list["Game"]] = relationship(back_populates="winner")
     assets = association_proxy("users_assets", "assets")
+    # TODO: add balance column (gold)
 
     def __repr__(self):
         return self.name

@@ -191,7 +191,13 @@ class SQLAlchemyAssetsRepository(AssetsRepository):
             orm_users_asset.is_locked = False
         await self.session.flush()
 
+    # TODO: add method to check if assets are minted
+    # TODO: add method to burn assets (switch is_minted to False)
+    # TODO: add mint method (switch is_minted to True)
+
     async def match(self, first_user_id: int, second_user_id: int, nft_ids: list[int]) -> None:
+        # TODO: add check if asset is not minted
+        # TODO: add price of order
         if first_user_id == second_user_id:
             raise UsersAreSameAtMatching(first_user_id)
 
