@@ -27,6 +27,10 @@ class UsersRepository(abc.ABC):
     async def update_user(self, user: User) -> UserInDB:
         raise NotImplementedError
 
+    @abc.abstractmethod
+    async def delete_user(self, auth_id: int) -> bool:
+        raise NotImplementedError
+
 
 class SQLAlchemyUsersRepository(UsersRepository):
     def __init__(self, session: AsyncSession):
@@ -74,12 +78,20 @@ class SQLAlchemyUsersRepository(UsersRepository):
     async def update_user(self, user: User) -> UserInDB:
         orm_user = await self._get_user_with_filter(SQLAlchemyUser.auth_id == user.auth_id)
         if not orm_user:
-            raise DoesNotExistException(f'User with id {user.auth_id} does not exist')
+            raise UserDoesNotExist(user.auth_id)
         orm_user.name = user.name
         if orm_user.wallet and orm_user.wallet.address:
             orm_user.wallet.address = user.wallet.address
-        elif not orm_user.wallet:
+        elif not orm_user.wallet and user.wallet:
             wallet = SQLAlchemyWallet(address=user.wallet.address, user=orm_user)
             self.session.add(wallet)
         await self.session.flush()
         return orm_user.to_domain()
+
+    async def delete_user(self, auth_id: int) -> bool:
+        orm_user = await self._get_user_with_filter(SQLAlchemyUser.auth_id == auth_id)
+        if not orm_user:
+            raise UserDoesNotExist(auth_id)
+        await self.session.delete(orm_user)
+        await self.session.flush()
+        return True

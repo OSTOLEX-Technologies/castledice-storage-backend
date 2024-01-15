@@ -43,3 +43,15 @@ async def test_update_user_by_auth_id(client, create_user, default_session_facto
 
     user = await get_user(response.json()["user"]["auth_id"], UsersSqlAlchemyUnitOfWork(default_session_factory))
     assert user.model_dump() == response.json()["user"]
+
+
+@pytest.mark.asyncio
+async def test_delete_user_by_auth_id(client, create_user, default_session_factory):
+    _, user = await create_user(default_session_factory, "test", auth_id=1)
+    response = client.delete("/user/1")
+    assert response.status_code == 200
+    assert response.json()["status"] == "deleted"
+
+    response = client.get("/user/1")
+    assert response.status_code == 404
+    assert response.json() == {"detail": "The User with the given auth_id 1 does not exist."}

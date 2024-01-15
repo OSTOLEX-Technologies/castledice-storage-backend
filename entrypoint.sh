@@ -11,12 +11,12 @@ then
     echo "PostgreSQL started"
 fi
 
-python alembic upgrade head
+alembic upgrade head
 
 if [ "$MODE" = "PRODUCTION" ] || [ "$MODE" = "STAGING" ]
 then
   echo "Running production server"
-  uvicorn --port 8000 --host 0.0.0.0 --workers 5 main:app
+  uvicorn --port 8000 --host 0.0.0.0 --workers 3 main:app
 fi
 
 exec "$@"

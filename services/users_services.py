@@ -26,3 +26,10 @@ async def update_user_by_auth_id(user_data: User, uow: UsersUnitOfWork) -> User:
         updated_user = await uow.users.update_user(user_data)
         await uow.commit()
         return updated_user
+
+
+async def delete_user_by_auth_id(auth_id: int, uow: UsersUnitOfWork) -> bool:
+    async with uow:
+        await uow.users.delete_user(auth_id)
+        await uow.commit()
+        return True

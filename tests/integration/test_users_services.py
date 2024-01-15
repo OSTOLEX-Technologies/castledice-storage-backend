@@ -4,7 +4,7 @@ from sqlalchemy.orm import joinedload
 
 from repositories.exceptions import UserDoesNotExist
 from repositories.in_db_classes import WalletInDB
-from services.users_services import get_user, create_user, update_user_by_auth_id
+from services.users_services import get_user, create_user, update_user_by_auth_id, delete_user_by_auth_id
 from uow.users_uow import UsersSqlAlchemyUnitOfWork
 from db import User as SQLAlchemyUser
 from domain.wallet import Wallet
@@ -66,15 +66,53 @@ async def test_update_user_by_auth_id_updates_user(session_factory):
 
 
 @pytest.mark.asyncio
-async def test_update_user_by_auth_id_updates_user_when_adding_wallet(session_factory):
+async def test_update_user_by_auth_id_updates_user_when_creating_wallet(session_factory):
     uow = UsersSqlAlchemyUnitOfWork(session_factory)
     await create_user(User(name="test1", auth_id=1), uow)
     assert (await get_user(1, uow)).wallet is None
 
-    user = await update_user_by_auth_id(User(name="test1", auth_id=1, wallet=Wallet(address="address1")), uow)
-    assert user.name == "test1"
+    user = await update_user_by_auth_id(User(name="test2", auth_id=1, wallet=Wallet(address="address1")), uow)
+    assert user.name == "test2"
     assert user.wallet.address == "address1"
     assert isinstance(user.wallet, WalletInDB)
     assert user.auth_id is not None
     user2 = await get_user(1, uow)
     assert user2 == user
+
+
+@pytest.mark.asyncio
+async def test_update_user_by_auth_id_without_wallet(session_factory):
+    uow = UsersSqlAlchemyUnitOfWork(session_factory)
+    await create_user(User(name="test1", auth_id=1), uow)
+    assert (await get_user(1, uow)).wallet is None
+
+    user = await update_user_by_auth_id(User(name="test2", auth_id=1), uow)
+    assert user.name == "test2"
+    assert user.wallet is None
+    assert user.auth_id is not None
+
+    user2 = await get_user(1, uow)
+    assert user2 == user
+
+
+@pytest.mark.asyncio
+async def test_update_user_by_auth_id_raises_exception_when_user_not_found(session_factory):
+    uow = UsersSqlAlchemyUnitOfWork(session_factory)
+    with pytest.raises(UserDoesNotExist):
+        await update_user_by_auth_id(User(name="test1", auth_id=1, wallet=Wallet(address="address1")), uow)
+
+
+@pytest.mark.asyncio
+async def test_delete_user_by_auth_id_deletes_user(session_factory):
+    uow = UsersSqlAlchemyUnitOfWork(session_factory)
+    await create_user(User(name="test1", auth_id=1, wallet=Wallet(address="address1")), uow)
+    await delete_user_by_auth_id(1, uow)
+    with pytest.raises(UserDoesNotExist):
+        await get_user(1, uow)
+
+
+@pytest.mark.asyncio
+async def test_delete_user_by_auth_id_raises_exception_when_user_not_found(session_factory):
+    uow = UsersSqlAlchemyUnitOfWork(session_factory)
+    with pytest.raises(UserDoesNotExist):
+        await delete_user_by_auth_id(1, uow)

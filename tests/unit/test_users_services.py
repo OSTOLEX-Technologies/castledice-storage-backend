@@ -2,7 +2,7 @@ import pytest
 
 from domain.wallet import Wallet
 from repositories.users_repository import UsersRepository
-from services.users_services import get_user, create_user
+from services.users_services import get_user, create_user, delete_user_by_auth_id, update_user_by_auth_id
 from domain.user import User
 from uow.users_uow import UsersUnitOfWork
 from uow.base_classes import AbstractUnitOfWork
@@ -23,11 +23,15 @@ class FakeUsersRepository(UsersRepository):
         return user
 
     async def update_user(self, user: User) -> User:
-        self.users[user.id] = user
+        self.users[user.auth_id] = user
         return user
 
+    async def delete_user(self, auth_id: int) -> bool:
+        self.users.pop(auth_id)
+        return True
 
-class FakeUnitOfWork(AbstractUnitOfWork, UsersUnitOfWork):
+
+class FakeUnitOfWork(UsersUnitOfWork):
     def __init__(self):
         self.users = FakeUsersRepository(users={})
         self.commited = False
@@ -61,4 +65,25 @@ async def test_create_user_uses_passed_uow():
     uow = FakeUnitOfWork()
     await create_user(user, uow)
     assert uow.users.users[1].name == user.name
+    assert uow.commited
+
+
+@pytest.mark.asyncio
+async def test_update_user_uses_passed_uow():
+    user = User(name="test", auth_id=1, wallet=Wallet(address="test"), games=[], games_won=[])
+    uow = FakeUnitOfWork()
+    uow.users.users = {1: user}
+    user.name = "test1"
+    await update_user_by_auth_id(user, uow)
+    assert uow.users.users[1].name == user.name
+    assert uow.commited
+
+
+@pytest.mark.asyncio
+async def test_delete_user_uses_passed_uow():
+    user = User(name="test", auth_id=1, wallet=Wallet(address="test"), games=[], games_won=[])
+    uow = FakeUnitOfWork()
+    uow.users.users = {1: user}
+    await delete_user_by_auth_id(1, uow)
+    assert 1 not in uow.users.users
     assert uow.commited

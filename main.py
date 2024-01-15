@@ -9,4 +9,4 @@ app.include_router(game_router)
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Castledice storage backend is running"}

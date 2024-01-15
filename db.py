@@ -26,7 +26,7 @@ class User(Base):
 
     auth_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str | None]
-    wallet: Mapped["Wallet"] = relationship(uselist=False, back_populates="user")
+    wallet: Mapped["Wallet"] = relationship(uselist=False, back_populates="user", cascade='all, delete-orphan')
     games: Mapped[list["Game"]] = relationship(secondary=users_to_games, back_populates="users")
     games_won: Mapped[list["Game"]] = relationship(back_populates="winner")
 

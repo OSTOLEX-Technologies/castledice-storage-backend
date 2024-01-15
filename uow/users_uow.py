@@ -4,7 +4,7 @@ from repositories.users_repository import SQLAlchemyUsersRepository, UsersReposi
 from .base_classes import SqlAlchemyUnitOfWork, AbstractUnitOfWork
 
 
-class UsersUnitOfWork(ABC):
+class UsersUnitOfWork(AbstractUnitOfWork, ABC):
     users: UsersRepository = None
 
 
