@@ -24,7 +24,7 @@ ADD ./requirements.txt .
 RUN set -ex \
     && apk update \
     && apk add --no-cache --virtual .build-deps postgresql-dev gcc python3-dev \
-    musl-dev zlib-dev jpeg-dev build-base libwebp-dev linux-headers curl-dev\
+    musl-dev zlib-dev jpeg-dev build-base libwebp-dev linux-headers curl-dev curl \
     && curl –proto ‘=https’ –tlsv1.2 -sSf https://sh.rustup.rs | sh \
     && pip install --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt

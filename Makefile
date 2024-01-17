@@ -24,7 +24,7 @@ e2e-tests: up-test
 	docker-compose run --rm --no-deps --entrypoint=python db.py && pytest app /tests/e2e
 
 sqlite-run-server:
-	DATABASE_TYPE=sqlite uvicorn main:app --reload
+	DATABASE_TYPE=sqlite uvicorn --port 8080 main:app --reload
 
 e2e-tests-sqlite:
 	DATABASE_TYPE=sqlite-memory pytest tests/e2e
