@@ -85,6 +85,8 @@ class SQLAlchemyUsersRepository(UsersRepository):
         elif not orm_user.wallet and user.wallet:
             wallet = SQLAlchemyWallet(address=user.wallet.address, user=orm_user)
             self.session.add(wallet)
+        orm_user.image_path = user.image_path
+
         await self.session.flush()
         return orm_user.to_domain()
 

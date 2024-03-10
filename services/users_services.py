@@ -23,7 +23,8 @@ async def update_user_by_auth_id(user_data: User, uow: UsersUnitOfWork) -> User:
             if not user.wallet:
                 user.wallet = user_data.wallet
             user.wallet.address = user_data.wallet.address
-        updated_user = await uow.users.update_user(user_data)
+        user.image_path = user_data.image_path
+        updated_user = await uow.users.update_user(user)
         await uow.commit()
         return updated_user
 

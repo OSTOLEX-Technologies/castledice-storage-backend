@@ -9,6 +9,7 @@ class User(BaseModel):
     wallet: Wallet | None = None
     games: list['Game'] | None = None
     games_won: list['Game'] | None = None
+    image_path: str | None = None
     model_config = ConfigDict(from_attributes=True)
 
 

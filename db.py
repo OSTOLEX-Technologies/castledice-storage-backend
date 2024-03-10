@@ -29,6 +29,7 @@ class User(Base):
     wallet: Mapped["Wallet"] = relationship(uselist=False, back_populates="user", cascade='all, delete-orphan')
     games: Mapped[list["Game"]] = relationship(secondary=users_to_games, back_populates="users")
     games_won: Mapped[list["Game"]] = relationship(back_populates="winner")
+    image_path: Mapped[str | None] = mapped_column(nullable=True)
 
     def __repr__(self):
         return self.name
@@ -40,6 +41,7 @@ class User(Base):
             wallet=WalletInDB(address=self.wallet.address) if self.wallet else None,
             games=[game.to_domain_without_users() for game in self.games],
             games_won=[game.to_domain_without_users() for game in self.games_won],
+            image_path=self.image_path,
         )
 
     def to_domain_without_games(self) -> UserInDB:
